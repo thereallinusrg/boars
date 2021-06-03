@@ -1,0 +1,20 @@
+---
+title: "Main_Notebook"
+author: "Linus Rüegg"
+date: "6/3/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#install.packages("devtools") 
+#devtools::install_github("ComputationalMovementAnalysis/ComputationalMovementAnalysisData")
+library(ComputationalMovementAnalysisData)
+```
+
+## Looking at the the Data 
+
+```{r}
+boars <- wildschwein_BE
+head(boars)
+```
