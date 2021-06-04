@@ -9,7 +9,11 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 #install.packages("devtools") 
 #devtools::install_github("ComputationalMovementAnalysis/ComputationalMovementAnalysisData")
+#install.packages("simplevis")
+library("simplevis")
 library(ComputationalMovementAnalysisData)
+library(sf)
+library(dplyr)
 ```
 
 ## Looking at the the Data 
@@ -18,3 +22,8 @@ library(ComputationalMovementAnalysisData)
 boars <- wildschwein_BE
 head(boars)
 ```
+
+```{r}
+write.csv(boars, "boars.csv", row.names = FALSE)
+```
+
