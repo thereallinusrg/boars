@@ -3,29 +3,27 @@
 **Patterns & Trends in Environmental Data / Computational Movement
 Analysis Geo 880**
 
-| Semester:      |                                   |
+| Semester:      |  FS21                                 |
 |----------------|---------------------------------- |
-| **Title:**     |                                   |
-| **Student 1:** |                                   |
+| **Title:**     |  Similarly Moving Boars & Corridor Detection                         |
+| **Student 1:** |  Linus Rüegg                                 |
 | **Student 2:** |  Eric Tharmalingam                |
 
-Which option do you choose:
-
-<!-- replace the space between the brackets with an x to choose your option-->
-
-- [ ] Option A: Wild boar data
-  - [ ] Find nesting sites
-  - [ ] Wildschweinschreck
-  - [ ] Alternative movement patterns
-- [ ] Option B: Free choice of topic
 
 ## Abstract 
 
 <!-- A short abstract of your project proposal (50-60 words) -->
+**Similarly Moving Boars**
+- Which animals move similarly?
+  -- Even at different times!
+**Corridor Detection**
+- Which animals use the same corridors?
+  - Where are those located?
 
 ## Research Questions
 
 <!-- What are the research questions of your project? (50-60 words) -->
+
 
 ## Results / products
 
