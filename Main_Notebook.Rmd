@@ -1,6 +1,6 @@
 ---
 title: "Main_Notebook"
-author: "Linus Rüegg"
+author: "Eric Tharmalingam & Linus Rüegg"
 date: "6/3/2021"
 output: html_document
 ---
