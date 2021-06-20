@@ -41,22 +41,16 @@ R2: How can common corridors used by several animals be detected?
 <!-- Which analytical concepts will you use? What conceptual movement spaces and respective modelling approaches of trajectories will you be using? What additional spatial analysis methods will you be using? -->
 - Raster the whole data extend
 - For each raster cell:
-  - Draw a grid (depicted on the right --> )
+  - Draw a grid 
   - Compute trajectory for each animal
   - Convert Trajectory to "Chess String"
 - Use EDR on all Chess Strings in a cell
 
-​
+- Find Corridors
+  - Check for same Chess Strings
 
-Find Corridors​
-
-Check for same Chess Strings​
-
-​
-
-Find similarly moving Boars​
-
-Check for Animals with low EDRs
+- Find similarly moving Boars
+  - Check for Animals with low EDRs
 
 ## R concepts
 
