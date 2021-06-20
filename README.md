@@ -7,7 +7,7 @@ Analysis Geo 880**
 |----------------|---------------------------------- |
 | **Title:**     |                                   |
 | **Student 1:** |                                   |
-| **Student 2:** |                                   |
+| **Student 2:** |  Eric Tharmalingam                |
 
 Which option do you choose:
 
