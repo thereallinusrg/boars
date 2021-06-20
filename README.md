@@ -13,17 +13,17 @@ Analysis Geo 880**
 ## Abstract 
 
 <!-- A short abstract of your project proposal (50-60 words) -->
-**Similarly Moving Boars**
-- Which animals move similarly?
-  -- Even at different times!
-**Corridor Detection**
-- Which animals use the same corridors?
-  - Where are those located?
+
 
 ## Research Questions
 
 <!-- What are the research questions of your project? (50-60 words) -->
-
+**Similarly Moving Boars**
+- Which animals move similarly?
+  - Even at different times!
+**Corridor Detection**
+- Which animals use the same corridors?
+  - Where are those located?
 
 ## Results / products
 
