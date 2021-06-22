@@ -7,23 +7,60 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-#install.packages("devtools") 
-#devtools::install_github("ComputationalMovementAnalysis/ComputationalMovementAnalysisData")
+install.packages("devtools") 
+devtools::install_github("ComputationalMovementAnalysis/ComputationalMovementAnalysisData")
 #install.packages("simplevis")
-library("simplevis")
+library(simplevis)
 library(ComputationalMovementAnalysisData)
 library(sf)
 library(dplyr)
 ```
 
-## Looking at the the Data 
+## Taking a Look at the the Data 
 
 ```{r}
 boars <- wildschwein_BE
 head(boars)
 ```
-
+Export as .csv
 ```{r}
+# Optional, to take a look at the data with QGIS 
 write.csv(boars, "boars.csv", row.names = FALSE)
+```
+
+# Step 1: Raster
+
+```{r Additional Imports for this method}
+library(sp)
+library(rgdal) 
+library(raster) 
+library(plyr)
+```
+Telling R that E and N are coordinate columns
+```{r}
+boars$E <- as.integer(boars$E)
+boars$N <- as.integer(boars$N)
+coordinates(boars) <- boars[,c(5, 6)]
+```
+
+Telling R that our points are in LV95 and check 
+```{r}
+proj4string(boars) <- CRS("+init=epsg:2056")
+is.projected(boars)
+```
+Creating a Raster over the extend of our boar location points
+```{r}
+r <- raster(ext=extent(boars))
+```
+
+Setting the raster cell size 
+```{r}
+res(r) <- 1000
+```
+1000m results in 13*10 cells
+
+Add raster coordinate info to column
+```{r}
+
 ```
 
