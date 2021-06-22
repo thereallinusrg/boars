@@ -3,29 +3,30 @@
 **Patterns & Trends in Environmental Data / Computational Movement
 Analysis Geo 880**
 
-| Semester:      |                                   |
+| Semester:      |  FS21                                 |
 |----------------|---------------------------------- |
-| **Title:**     |                                   |
-| **Student 1:** |                                   |
+| **Title:**     |  Similarly Moving Boars & Corridor Detection                         |
+| **Student 1:** |  Linus Rüegg                                 |
 | **Student 2:** |  Eric Tharmalingam                |
 
-Which option do you choose:
-
-<!-- replace the space between the brackets with an x to choose your option-->
-
-- [ ] Option A: Wild boar data
-  - [ ] Find nesting sites
-  - [ ] Wildschweinschreck
-  - [ ] Alternative movement patterns
-- [ ] Option B: Free choice of topic
 
 ## Abstract 
 
 <!-- A short abstract of your project proposal (50-60 words) -->
+**Similarly Moving Boars**
+- Which animals move similarly?
+  - Even at different times!
+**Corridor Detection**
+- Which animals use the same corridors?
+  - Where are those located?
 
 ## Research Questions
 
 <!-- What are the research questions of your project? (50-60 words) -->
+
+R1: How can trajectories be modeled to find similarity in movement?
+
+R2: How can common corridors used by several animals be detected?
 
 ## Results / products
 
@@ -38,6 +39,18 @@ Which option do you choose:
 ## Analytical concepts
 
 <!-- Which analytical concepts will you use? What conceptual movement spaces and respective modelling approaches of trajectories will you be using? What additional spatial analysis methods will you be using? -->
+- Raster the whole data extend
+- For each raster cell:
+  - Draw a grid 
+  - Compute trajectory for each animal
+  - Convert Trajectory to "Chess String"
+- Use EDR on all Chess Strings in a cell
+
+- Find Corridors
+  - Check for same Chess Strings
+
+- Find similarly moving Boars
+  - Check for Animals with low EDRs
 
 ## R concepts
 
