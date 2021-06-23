@@ -7,8 +7,8 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-install.packages("devtools") 
-devtools::install_github("ComputationalMovementAnalysis/ComputationalMovementAnalysisData")
+#install.packages("devtools") 
+#devtools::install_github("ComputationalMovementAnalysis/ComputationalMovementAnalysisData")
 #install.packages("simplevis")
 library(simplevis)
 library(ComputationalMovementAnalysisData)
@@ -56,11 +56,15 @@ r <- raster(ext=extent(boars))
 Setting the raster cell size 
 ```{r}
 res(r) <- 1000
+r
 ```
 1000m results in 13*10 cells
 
 Add raster coordinate info to column
 ```{r}
-
+boars$raster_E <-((boars$E - r@extent@xmin) %/% ((r@extent@xmax - r@extent@xmin)/ r@ncols))
+boars$raster_N <-((boars$N - r@extent@ymin) %/% ((r@extent@ymax - r@extent@ymin)/ r@nrows))
 ```
+
+
 
