@@ -62,9 +62,10 @@ r
 
 Add raster coordinate info to column
 ```{r}
-boars$raster_E <-((boars$E - r@extent@xmin) %/% ((r@extent@xmax - r@extent@xmin)/ r@ncols)) # (Minimum - Koordinate) // cellsize 
+boars$raster_E <-((boars$E - r@extent@xmin) %/% ((r@extent@xmax - r@extent@xmin)/ r@ncols)) # (Koordinate - Minimum Extent) // cellsize 
 boars$raster_N <-((boars$N - r@extent@ymin) %/% ((r@extent@ymax - r@extent@ymin)/ r@nrows))
 ```
+
 
 
 
