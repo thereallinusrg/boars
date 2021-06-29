@@ -62,10 +62,22 @@ r
 
 Add raster coordinate info to column
 ```{r}
-boars$raster_E <-((boars$E - r@extent@xmin) %/% ((r@extent@xmax - r@extent@xmin)/ r@ncols)) # (Koordinate - Minimum Extent) // cellsize 
-boars$raster_N <-((boars$N - r@extent@ymin) %/% ((r@extent@ymax - r@extent@ymin)/ r@nrows))
+boars$raster_E <- ((boars$E - r@extent@xmin) %/% ((r@extent@xmax - r@extent@xmin)/ r@ncols)) # (Koordinate - Minimum Extent) // cellsize 
+boars$raster_N <- ((boars$N - r@extent@ymin) %/% ((r@extent@ymax - r@extent@ymin)/ r@nrows))
+```
+
+Selecting raster cells and adding grid & grid cell coordinates
+```{r}
+boars@data %>% filter(raster_E == 8)
 ```
 
 
+```{r}
+print(boars)
+```
+```{r}
+# We got -1 and 0 !
+replace(boars$raster_E, TRUE, letters[boars$raster_E])
+```
 
 
