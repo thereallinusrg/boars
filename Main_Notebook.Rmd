@@ -81,3 +81,4 @@ replace(boars$raster_E, TRUE, letters[boars$raster_E])
 ```
 
 
+
