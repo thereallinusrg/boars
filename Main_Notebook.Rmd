@@ -68,10 +68,52 @@ boars$raster_N <- ((boars$N - r@extent@ymin) %/% ((r@extent@ymax - r@extent@ymin
 
 Selecting raster cells and adding grid & grid cell coordinates
 ```{r}
-boars@data %>% filter(raster_E == 8)
+# Getting boundries for the loop
+minE <- min(boars@data$raster_E)
+maxE <- max(boars@data$raster_E)
+minN <- min(boars@data$raster_N)
+maxN <- max(boars@data$raster_N)
+
+# Creating empty df to append information to
+chess_boars <- data.frame(Name=character(),
+                  raster_E=integer(),
+                  raster_N=integer(),
+                  Chess_string=character(),
+                  DatetimeUTC=integer(),
+                  stringsAsFactors=FALSE)
 ```
 
+Loop
+```{r}
+for (E in minE:maxE)
+{
+for (N in minN:maxN)
+{
+# INSERT HERE
+}
+}
+```
 
+The Stuff to INSERT:
+- Testing with only one cell, remove E N definitions before inserting
+```{r}
+E <- 7
+N <- 6
+# Doing the same as for the Raster now in every Raster cell (rcell), calling it Grid (g)
+rcell <- boars@data %>% filter(raster_E == E, raster_N == N)
+coordinates(rcell) <- rcell[,c(5, 6)]
+g <- raster(ext=extent(rcell))
+res(g) <- 50 # Setting the Grid resolution here, the 1000m Raster Cell is divided by this.
+rcell$grid_E <- ((rcell$E - g@extent@xmin) %/% ((g@extent@xmax - g@extent@xmin)/ g@ncols)) # (Koordinate - Minimum Extent) // cellsize 
+rcell$grid_N <- ((rcell$N - g@extent@ymin) %/% ((g@extent@ymax - g@extent@ymin)/ g@nrows))
+
+# Append all Information to a new DF containing our "Chess Strings"
+#Append!!: chess_boars$raster_E <- E
+print(E)
+```
+
+##### For later
+Converting to a new df and converting to "Chess Board Coordinates"
 ```{r}
 print(boars)
 ```
