@@ -13,6 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(simplevis)
 library(ComputationalMovementAnalysisData)
 library(sf)
+library(plyr)
 library(dplyr)
 ```
 
@@ -34,7 +35,6 @@ write.csv(boars, "boars.csv", row.names = FALSE)
 library(sp)
 library(rgdal) 
 library(raster) 
-library(plyr)
 ```
 Telling R that E and N are coordinate columns
 ```{r}
@@ -79,7 +79,6 @@ chess_boars <- data.frame(Name=character(),
                   raster_E=integer(),
                   raster_N=integer(),
                   Chess_string=character(),
-                  DatetimeUTC=integer(),
                   stringsAsFactors=FALSE)
 ```
 
@@ -97,10 +96,10 @@ for (N in minN:maxN)
 The Stuff to INSERT:
 - Testing with only one cell, remove E N definitions before inserting
 ```{r}
-E <- 7
-N <- 6
+E_n <- 7
+N_n <- 6
 # Doing the same as for the Raster now in every Raster cell (rcell), calling it Grid (g)
-rcell <- boars@data %>% filter(raster_E == E, raster_N == N)
+rcell <- boars@data %>% filter(raster_E == E_n, raster_N == N_n)
 coordinates(rcell) <- rcell[,c(5, 6)]
 g <- raster(ext=extent(rcell))
 res(g) <- 50 # Setting the Grid resolution here, the 1000m Raster Cell is divided by this.
@@ -108,8 +107,9 @@ rcell$grid_E <- ((rcell$E - g@extent@xmin) %/% ((g@extent@xmax - g@extent@xmin)/
 rcell$grid_N <- ((rcell$N - g@extent@ymin) %/% ((g@extent@ymax - g@extent@ymin)/ g@nrows))
 
 # Append all Information to a new DF containing our "Chess Strings"
-#Append!!: chess_boars$raster_E <- E
-print(E)
+# Create array or "row" to append
+chess_boars$raster_E <- E_n
+print(E_n)
 ```
 
 ##### For later

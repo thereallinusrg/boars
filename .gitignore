@@ -4,3 +4,4 @@
 .Ruserdata
 *.gpkg
 *.gpkg-*
+*.csv
