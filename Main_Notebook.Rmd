@@ -12,12 +12,15 @@ knitr::opts_chunk$set(echo = TRUE)
 #install.packages("simplevis")
 library(simplevis)
 library(ComputationalMovementAnalysisData)
-library(sf)
+#library(sf)
 library(plyr)
 library(dplyr)
+library(sp)
+library(rgdal) 
+library(raster) 
 ```
 
-## Taking a Look at the the Data 
+## Taking a Look at the the Data & Import
 
 ```{r}
 boars <- wildschwein_BE
@@ -31,11 +34,6 @@ write.csv(boars, "boars.csv", row.names = FALSE)
 
 # Step 1: Raster
 
-```{r Additional Imports for this method}
-library(sp)
-library(rgdal) 
-library(raster) 
-```
 Telling R that E and N are coordinate columns
 ```{r}
 boars$E <- as.integer(boars$E)
@@ -51,10 +49,8 @@ is.projected(boars)
 Creating a Raster over the extend of our boar location points
 ```{r}
 r <- raster(ext=extent(boars))
-```
 
-Setting the raster cell size 
-```{r}
+# Setting the raster cell size 
 res(r) <- 1000
 r
 ```
@@ -66,7 +62,9 @@ boars$raster_E <- ((boars$E - r@extent@xmin) %/% ((r@extent@xmax - r@extent@xmin
 boars$raster_N <- ((boars$N - r@extent@ymin) %/% ((r@extent@ymax - r@extent@ymin)/ r@nrows))
 ```
 
-Selecting raster cells and adding grid & grid cell coordinates
+# Step 2: Grid
+
+Preparing to add a grid for each raster cell
 ```{r}
 # Getting boundries for the loop
 minE <- min(boars@data$raster_E)
@@ -74,53 +72,93 @@ maxE <- max(boars@data$raster_E)
 minN <- min(boars@data$raster_N)
 maxN <- max(boars@data$raster_N)
 
-# Creating empty df to append information to
-chess_boars <- data.frame(Name=character(),
-                  raster_E=integer(),
-                  raster_N=integer(),
-                  Chess_string=character(),
-                  stringsAsFactors=FALSE)
+# Empty Vectors to be appended to in the loop, to add the grid Coordinates to the boars df after the loop ran
+grid_E <- c()
+grid_N <- c() 
 ```
 
-Loop
+Loop to create grid coordinates
 ```{r}
-for (E in minE:maxE)
+for (E_n in minE:maxE)
 {
-for (N in minN:maxN)
-{
-# INSERT HERE
-}
+  for (N_n in minN:maxN)
+  {
+  
+    # Doing the same as for the Raster now in every Raster cell (rcell), calling it Grid (g)
+    rcell <- boars@data %>% filter(raster_E == E_n, raster_N == N_n)
+    if (nrow(rcell)>1){ # Disregarding no or just single locations, as no strings can be built in those raster cells
+      coordinates(rcell) <- rcell[,c(5, 6)]
+      g <- raster(ext=extent(rcell))
+      res(g) <- 50 # Setting the Grid resolution here, the 1000m Raster Cell is divided by this.
+      rcell$grid_E <- ((rcell$E - g@extent@xmin) %/% ((g@extent@xmax - g@extent@xmin)/ g@ncols)) 
+      rcell$grid_N <- ((rcell$N - g@extent@ymin) %/% ((g@extent@ymax - g@extent@ymin)/ g@nrows))
+      grid_E <- append(grid_E,rcell$grid_E) 
+      grid_N <- append(grid_N,rcell$grid_N)
+    } else if (nrow(rcell)>0) { # Adding a 0 grid coordinate for raster cells with only 1 location (to preserve vector len)
+      grid_E <- append(grid_E,0)
+      grid_N <- append(grid_N,0)
+    }
+  }
 }
 ```
 
-The Stuff to INSERT:
-- Testing with only one cell, remove E N definitions before inserting
+Append grid coordinate vectors to the boars spdf
 ```{r}
-E_n <- 7
-N_n <- 6
-# Doing the same as for the Raster now in every Raster cell (rcell), calling it Grid (g)
-rcell <- boars@data %>% filter(raster_E == E_n, raster_N == N_n)
-coordinates(rcell) <- rcell[,c(5, 6)]
-g <- raster(ext=extent(rcell))
-res(g) <- 50 # Setting the Grid resolution here, the 1000m Raster Cell is divided by this.
-rcell$grid_E <- ((rcell$E - g@extent@xmin) %/% ((g@extent@xmax - g@extent@xmin)/ g@ncols)) # (Koordinate - Minimum Extent) // cellsize 
-rcell$grid_N <- ((rcell$N - g@extent@ymin) %/% ((g@extent@ymax - g@extent@ymin)/ g@nrows))
+boars@data$grid_E <- grid_E
+boars@data$grid_N <- grid_N
+```
 
+# Step 3: Create Chess Strings per Raster Cell & Animal
+```{r}
 # Append all Information to a new DF containing our "Chess Strings"
-# Create array or "row" to append
-chess_boars$raster_E <- E_n
-print(E_n)
+
+# Creating empty df to later append to
+empty_vector = c("Beispiel",0,0,"A1b2")
+name_vector = c("TierName","raster_E","raster_N","ChessString")
+#create a data frame out of a transposed vector
+chess_boars = as.data.frame(t(empty_vector));
+#change the names of the dataframe to be the titles
+colnames(chess_boars) <- name_vector;
+
 ```
 
-##### For later
-Converting to a new df and converting to "Chess Board Coordinates"
+Creating the ChessStrings (This Loop takes a few seconds to run)
 ```{r}
-print(boars)
+for (E_n in minE:maxE)
+{
+  for (N_n in minN:maxN)
+  {
+    if (unique(boars@data$TierName)[1] > 0){
+      for(name in unique(boars@data$TierName)){
+        filter <- boars@data %>% filter(raster_E == E_n, raster_N == N_n, TierName == name)
+        if (nrow(filter) >0) {
+          filter$grid_E <- replace(filter$grid_E, filter$grid_E <1, 26) # setting -1 and 0 to z
+          filter$grid_E <- replace(filter$grid_E, TRUE, letters[filter$grid_E]) # Turn Eastings into letters
+          filter$coord <- paste(filter$grid_E, filter$grid_N, sep="") # Paste Eastings and Northings into one column
+          
+          coordf<- data.frame(filter$coord)
+          ChessString <- paste(coordf[,1], collapse = "")
+          
+          supplemental_vector = c(name, E_n, N_n, ChessString)
+          
+          # Appending the Vector to the chess_boars df
+          supplemental_data_frame <- data.frame(t(supplemental_vector));
+          colnames(supplemental_data_frame) <- name_vector;
+          chess_boars <- rbind(chess_boars, supplemental_data_frame);
+        }
+      }
+    }
+  }
+}
 ```
+
 ```{r}
-# We got -1 and 0 !
-replace(boars$raster_E, TRUE, letters[boars$raster_E])
+# Removing the row used to create the df
+chess_boars <- chess_boars[-c(1),] 
 ```
+
+
+
 
 
 
