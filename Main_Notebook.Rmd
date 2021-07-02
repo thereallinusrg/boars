@@ -86,18 +86,15 @@ for (E_n in minE:maxE)
   
     # Doing the same as for the Raster now in every Raster cell (rcell), calling it Grid (g)
     rcell <- boars@data %>% filter(raster_E == E_n, raster_N == N_n)
-    if (nrow(rcell)>1){ # Disregarding no or just single locations, as no strings can be built in those raster cells
+    if (nrow(rcell)>0){ # Disregarding no or just single locations, as no strings can be built in those raster cells
       coordinates(rcell) <- rcell[,c(5, 6)]
-      g <- raster(ext=extent(rcell))
+      g <- raster(ext=extent(r@extent@xmin + 1000*E_n, r@extent@xmin + 1000*E_n + 1000, r@extent@ymin + 1000*N_n, r@extent@ymin + 1000*N_n + 1000)) # Create the grid, setting the extent to the corresponding raster cell
       res(g) <- 50 # Setting the Grid resolution here, the 1000m Raster Cell is divided by this.
       rcell$grid_E <- ((rcell$E - g@extent@xmin) %/% ((g@extent@xmax - g@extent@xmin)/ g@ncols)) 
       rcell$grid_N <- ((rcell$N - g@extent@ymin) %/% ((g@extent@ymax - g@extent@ymin)/ g@nrows))
       grid_E <- append(grid_E,rcell$grid_E) 
       grid_N <- append(grid_N,rcell$grid_N)
-    } else if (nrow(rcell)>0) { # Adding a 0 grid coordinate for raster cells with only 1 location (to preserve vector len)
-      grid_E <- append(grid_E,0)
-      grid_N <- append(grid_N,0)
-    }
+    } 
   }
 }
 ```
