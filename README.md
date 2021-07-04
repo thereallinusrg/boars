@@ -1,11 +1,10 @@
-# Proposal for Semester Project
+# Similarly Moving Boars & Corridor Detection 
 
 **Patterns & Trends in Environmental Data / Computational Movement
-Analysis Geo 880**
+Analysis GEO 880**
 
 | Semester:      |  FS21                                 |
 |----------------|---------------------------------- |
-| **Title:**     |  Similarly Moving Boars & Corridor Detection                         |
 | **Student 1:** |  Linus Rüegg                                 |
 | **Student 2:** |  Eric Tharmalingam                |
 
@@ -52,19 +51,4 @@ R2: How can common corridors used by several animals be detected?
 - Find similarly moving Boars
   - Check for Animals with low EDRs
 
-## R concepts
 
-<!-- Which R concepts, functions, packages will you mainly use. What additional spatial analysis methods will you be using? -->
-
-## Risk analysis
-
-<!-- What could be the biggest challenges/problems you might face? What is your plan B? -->
-
-## Questions? 
-
-<!-- 
-Which questions would you like to discuss at the coaching session? 
-
-For questions regarding the data: Please file an issue here: https://github.com/ComputationalMovementAnalysis/ComputationalMovementAnalysisData/issues
-
--->
