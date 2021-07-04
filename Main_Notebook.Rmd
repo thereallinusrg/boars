@@ -3,12 +3,9 @@ title: "Main_Notebook"
 author: "Eric Tharmalingam & Linus Rüegg"
 date: "6/3/2021"
 output: html_document
-runtime: shiny
 ---
 
-### 1. Abstract
-
-### 2. Introduction
+### 1. Introduction
 
 Wild boars ranges extend over large parts of Europa and Asia. In Switzerland most wild boar populations live in the Mittelland, Jura and parts of Tessin and Rhonetal. The typical habitat of wild boars is the forest and the upper altitude during summer, where wild boars can be found, ranges from 2000-4000 m.s.l. Wild boars have the ability to adapt themselves to new habitats. Agricultural areas are used by wild boars for feeding. If the vegetation is dense and higher than 70 cm, they also like to use them as hiding places (WildLife Solutions, 2021). Keuling et al. suggest an increase in wild boar populations due to higher temperatures during winter months, better access to food and wrong regulations measures (2016). These circumstances lead to more frequent conflicts between agriculture and wildlife. In 2020, Chf 95'000.- worth of damage was caused by wild boars in the canton of Fribourg (Amt für Wald und Natur, 2021). Therefore the number of hunted wild boars in Switzerland also increased from 60 in 1970 to 12996 in 2019 (Bundesamt für Statistik, 2020).
 
@@ -32,7 +29,7 @@ Fig. 2 Visualisation of adist()
 
 To answer RQ2 sequences of most frequently visited grid cells are calculated. The word corridor should not be confused with structures that allow animals to cross anthropogenic barriers. The temporal component of different trajectories is not taken into account. Only the total frequency of grid cells over the whole time period is decisive.
 
-### 3. Data and Methods
+### 2. Data and Methods
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -357,26 +354,25 @@ WBC_chess <- dplyr::bind_rows(wildboarCombinations[1:2,])
 WBC_chess[is.na(WBC_chess)] <- ""
 ```
 
-Export data to run Loop to calculate EditDistance in IPython
-(see separate file wbc_loop.ipynb)
---> we did this, since we were not able to vectorize the functionality of the loop and python (pandas) performs better handling such large loops then R
+Export data to run Loop to calculate EditDistance in IPython (see separate file wbc_loop.ipynb) --\> we did this, since we were not able to vectorize the functionality of the loop and python (pandas) performs better handling such large loops then R
+
 ```{r}
 write.csv(WBC_chess, "wbc.csv", row.names = FALSE)
 ```
 
 Import data again.
+
 ```{r}
 EditDistance <- read.csv("edc.csv", header=TRUE, stringsAsFactors=FALSE)
 ```
 
 Add EditDistance row sum column.
+
 ```{r}
-rowSums(EditDistance[1,2:65])
-rowSums(EditDistance[2,2:65])
-rowSums(EditDistance[3,2:65])
+EditDistance$row_sum = rowSums(df1[,c(-1)])
 ```
 
-### 4. Results
+### 3. Results
 
 Tab. 1 Most frequently visited grid cells overall
 
@@ -386,13 +382,13 @@ View(PopularRasterGrids)
 
 Tab. 2 Similarity of wild boar movement
 
-### 5. Visualisation
+### 4. Visualisation
 
 The initial goal was to create a interactive map with RShiny and Leaflet. Check boxes would have enabled the display of one or multiple wild boar trajectories. The grid and the background map would have increased the orientation in space. But Leaflet only accepts EPSG: 4326 (Agafonkin, 2016). But our map depends on EPSG: 2056, as the raster and grid were calculated in meters. A simple visualisation was therefore realised in QGIS. A .csv per wild boar was created in R and the Points to Path tool in QGIS was used to convert the points to lines (trajectories). The raster and grid were created with the mmQGIS plugin.
 
 The QGIS project can be accessed as a geopackage from our repository.
 
-### 6. Discussion
+### 5. Discussion
 
 **General description of wild boar trajectories**
 
@@ -404,6 +400,8 @@ Fig. 3 Trajectory of Franz
 
 **Similarly moving wild boars**
 
+We will update this section until tomorrow.
+
 **Frequently visited corridors**
 
 Tab. 1 contains a frequency count of all unique raster and grid combinations. From our definition a corridor exists, if adjacent grid cells have a high frequency count. Raster in the center of the map are more popular, as most animals mainly move between lake Murten and lake Neuchâtel. Outer raster cells and raster cells over water bodies have a low frequency counts. The grid cell with the highest frequency count is located in raster (6/7) and grid cell (2/0). But explicit corridors are not visible at first sight, as the grid cells with the highest frequency counts are not located next to each other. Possible reasons for the non existence of corridors are: The topography of the study area is very flat and the land cover is generally open and accessible. Therefore animals can move around freely and if free movement is possible animals do not tend to walk in straight lines (corridors). If animals move next to a straight object, which can not be crossed (canal, railway track), corridors are probably more common. Larger grid cells might deliver better results. The temporal resolution (15min) of the movement data is probably not high enough to detect corridors. Our method is suitable to create Kernel Density Maps representing the frequency of visited grid cells.
@@ -412,28 +410,26 @@ Tab. 1 contains a frequency count of all unique raster and grid combinations. Fr
 
 The calculations for the similarity analysis took very long. A more efficient algorithm could decrease the run time. We tried to tackle this problem by using raster cells, which reduce the length of trajectories. But R is not very efficient with for loops. A faster algorithm would enable a variation of the grid size and the outputs could be compared with a sensitivity analysis. A grid cell approach in combination with a rather low temporal resolution of the dataset is probably not the best method to detect corridors.
 
-### 7. References
+### 6. References
 
 20min (2018): Wildschweine fressen Bauern den Gewinn weg. <https://www.20min.ch/story/wildschweine-fressen-bauern-den-gewinn-weg-505709754904> \| Access 04.07.2021
 
 Agafonkin, V. (2016): Leaflet for R. <https://rstudio.github.io/leaflet/> \| Access 04.07.2021
 
-Amt für Wald und Natur (2021): Wildschäden in der Landwirtschaft. [<https://www.fr.ch/de/energie-landwirtschaft-und-umwelt/landwirtschaft-und-nutztiere/wildschaeden-in-der-landwirtschaft>](https://www.fr.ch/de/energie-landwirtschaft-und-umwelt/landwirtschaft-und-nutztiere/wildschaeden-in-der-landwirtschaft){.uri} \| Access 04.07.2021
+Amt für Wald und Natur (2021): Wildschäden in der Landwirtschaft. [\<https://www.fr.ch/de/energie-landwirtschaft-und-umwelt/landwirtschaft-und-nutztiere/wildschaeden-in-der-landwirtschaft\>](https://www.fr.ch/de/energie-landwirtschaft-und-umwelt/landwirtschaft-und-nutztiere/wildschaeden-in-der-landwirtschaft){.uri} \| Access 04.07.2021
 
-BauernZeitung (2019): Bielersee: Wildschweine machen Mühe. [<https://www.bauernzeitung.ch/artikel/bielersee-wildschweine-machen-muehe>](https://www.bauernzeitung.ch/artikel/bielersee-wildschweine-machen-muehe){.uri} \| Access 04.07.2021
+BauernZeitung (2019): Bielersee: Wildschweine machen Mühe. [\<https://www.bauernzeitung.ch/artikel/bielersee-wildschweine-machen-muehe\>](https://www.bauernzeitung.ch/artikel/bielersee-wildschweine-machen-muehe){.uri} \| Access 04.07.2021
 
-Bayerisches Staatsministerium für Ernährung, Landwirtschaft und Forsten (n.d.): Ein Wildschwein ist selten allein. [<https://www.wildtierportal.bayern.de/wildtiere_bayern/099052/index.php>](https://www.wildtierportal.bayern.de/wildtiere_bayern/099052/index.php){.uri} \| Access 04.07.2021
+Bayerisches Staatsministerium für Ernährung, Landwirtschaft und Forsten (n.d.): Ein Wildschwein ist selten allein. [\<https://www.wildtierportal.bayern.de/wildtiere_bayern/099052/index.php\>](https://www.wildtierportal.bayern.de/wildtiere_bayern/099052/index.php){.uri} \| Access 04.07.2021
 
-Bieler Tagblatt (2020): Wildschweine durchpflügen die Felder des Seelands. [<https://www.bielertagblatt.ch/nachrichten/seeland/wildschweine-durchpfluegen-die-felder-des-seelands>](https://www.bielertagblatt.ch/nachrichten/seeland/wildschweine-durchpfluegen-die-felder-des-seelands){.uri} \| Access 04.07.2021
+Bieler Tagblatt (2020): Wildschweine durchpflügen die Felder des Seelands. [\<https://www.bielertagblatt.ch/nachrichten/seeland/wildschweine-durchpfluegen-die-felder-des-seelands\>](https://www.bielertagblatt.ch/nachrichten/seeland/wildschweine-durchpfluegen-die-felder-des-seelands){.uri} \| Access 04.07.2021
 
-Bundesamt für Statistik (2020): Jagd. [<https://www.bfs.admin.ch/bfs/de/home/statistiken/land-forstwirtschaft/jagd-fischerei-fischzucht/jagd.html>](https://www.bfs.admin.ch/bfs/de/home/statistiken/land-forstwirtschaft/jagd-fischerei-fischzucht/jagd.html){.uri} \| Access 04.07.2021
+Bundesamt für Statistik (2020): Jagd. [\<https://www.bfs.admin.ch/bfs/de/home/statistiken/land-forstwirtschaft/jagd-fischerei-fischzucht/jagd.html\>](https://www.bfs.admin.ch/bfs/de/home/statistiken/land-forstwirtschaft/jagd-fischerei-fischzucht/jagd.html){.uri} \| Access 04.07.2021
 
-FDCH (2021): Schweiz-Bieler Seeland. [<https://www.schweizer-regionen.ch/ortschaften/Region_BielerSeeland>](https://www.schweizer-regionen.ch/ortschaften/Region_BielerSeeland){.uri} \| Access 04.07.2021
+FDCH (2021): Schweiz-Bieler Seeland. [\<https://www.schweizer-regionen.ch/ortschaften/Region_BielerSeeland\>](https://www.schweizer-regionen.ch/ortschaften/Region_BielerSeeland){.uri} \| Access 04.07.2021
 
-Keuling, O., Strauß, E., & Siebert, U. (2016). Regulating wild boar populations is " somebody else's
-problem " ! - Human dimension in wild boar management. Science of the Total Environment,
-554--555, 311--319.
+Keuling, O., Strauß, E., & Siebert, U. (2016). Regulating wild boar populations is " somebody else's problem " ! - Human dimension in wild boar management. Science of the Total Environment, 554--555, 311--319.
 
-WildLife Solutions (2021): Wildschwein (Sus scrofa). [<https://wls.ch/sanglier/?lang=de>](https://wls.ch/sanglier/?lang=de){.uri} \| Access 04.07.2021
+WildLife Solutions (2021): Wildschwein (Sus scrofa). [\<https://wls.ch/sanglier/?lang=de\>](https://wls.ch/sanglier/?lang=de){.uri} \| Access 04.07.2021
 
-ZHAW (2019): Wildschweinschreck soll Schäden verhindern. [<https://www.youtube.com/watch?v=WYXnCQMfPiI&ab_channel=ZHAWZ%C3%BCrcherHochschulef%C3%BCrAngewandteWissenschaften>](https://www.youtube.com/watch?v=WYXnCQMfPiI&ab_channel=ZHAWZ%C3%BCrcherHochschulef%C3%BCrAngewandteWissenschaften){.uri} \| Access 04.07.2021
+ZHAW (2019): Wildschweinschreck soll Schäden verhindern. [\<https://www.youtube.com/watch?v=WYXnCQMfPiI&ab_channel=ZHAWZ%C3%BCrcherHochschulef%C3%BCrAngewandteWissenschaften\>](https://www.youtube.com/watch?v=WYXnCQMfPiI&ab_channel=ZHAWZ%C3%BCrcherHochschulef%C3%BCrAngewandteWissenschaften){.uri} \| Access 04.07.2021
