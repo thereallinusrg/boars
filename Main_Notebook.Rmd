@@ -3,7 +3,36 @@ title: "Main_Notebook"
 author: "Eric Tharmalingam & Linus Rüegg"
 date: "6/3/2021"
 output: html_document
+runtime: shiny
 ---
+
+### 1. Abstract
+
+### 2. Introduction
+
+Wild boars ranges extend over large parts of Europa and Asia. In Switzerland most wild boar populations live in the Mittelland, Jura and parts of Tessin and Rhonetal. The typical habitat of wild boars is the forest and the upper altitude during summer, where wild boars can be found, ranges from 2000-4000 m.s.l. Wild boars have the ability to adapt themselves to new habitats. Agricultural areas are used by wild boars for feeding. If the vegetation is dense and higher than 70 cm, they also like to use them as hiding places (WildLife Solutions, 2021). Keuling et al. suggest an increase in wild boar populations due to higher temperatures during winter months, better access to food and wrong regulations measures (2016). These circumstances lead to more frequent conflicts between agriculture and wildlife. In 2020, Chf 95'000.- worth of damage was caused by wild boars in the canton of Fribourg (Amt für Wald und Natur, 2021). Therefore the number of hunted wild boars in Switzerland also increased from 60 in 1970 to 12996 in 2019 (Bundesamt für Statistik, 2020).
+
+Researchers at ZHAW developed an acoustic measure to keep wild boars away from agricultural. Speakers located near agricultural zones chase away wild boars with warning signals (anthropogenic sounds). During this project GPS data of several wild boars were collected (ZHAW, 2019). We use this data to get a better insight about the spatial patterns of wild boar movements. Therefore we came up with the following two research questions:
+
+-   RQ1: How can trajectories be modeled to find similarity in movement?
+
+-   RQ2: How can common corridors used by several animals be detected?
+
+To answer both research questions a raster and grid combination (Fig. 1) will be used to reduce the spatial accuracy and to increase the performance of the calculations. The black boxes in Fig. 1 represent the raster with a 1000 m resolution. The purpose of the raster is to split the trajectories of wild boars into fragments. The red boxes represent the grid with a 50 m resolution. The purpose of the grid is to reduce the spatial resolution of the GPS data. Movement within a grid cell cannot be distinguished anymore. GPS coordinates are replaced by grid cell names (A1, A2 etc.). The colorful lines in Fig. 1 represent the movement of unique wild boars.
+
+![](C:/Users/eric9/AppData/Local/RStudio/tmp/paste-246AD26B.png)
+
+Fig. 1 BLA BLA
+
+To answer RQ1 we will use the Edit Distance method to compare the similarity of two trajectories. The adist() tool in R calculates the number of edits needed to make two trajectories identical. The trajectories with the least amount of edits needed, are most similar to each other. Fig. 2 visualizes the process behind adist().
+
+![](C:/Users/eric9/AppData/Local/RStudio/tmp/paste-7B66675D.png)
+
+Fig. 2 BLA BLA
+
+To answer RQ2 sequences of most frequently visited grid cells are calculated. The word corridor should not be confused with structures that allow animals to cross anthropogenic barriers. The temporal component of different trajectories is not taken into account. Only the total frequency of grid cells over the whole time period is decisive.
+
+### 3. Data and Methods
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -12,41 +41,54 @@ knitr::opts_chunk$set(echo = TRUE)
 #install.packages("simplevis")
 library(simplevis)
 library(ComputationalMovementAnalysisData)
-#library(sf)
+library(sf)
 library(plyr)
 library(dplyr)
 library(sp)
 library(rgdal) 
-library(raster) 
+library(raster)
+library(ggplot2)
+library(leaflet)
+library(shiny)
+library(tidyr)
+library(stringdist)
 ```
 
-## Taking a Look at the the Data & Import
+**Step 0: Data**
+
+The dataset contains spatio-temporal information about 19 different wild boars. The sex can be derived form the animal names. No age information is provided. The observed time periods are of different lengths for the respective animals. Earliest records are from 28.05.2014 and latest records are from 18.10.2016. A location update is provided roughly every 15 min. The tracked animals mostly moved around in the Berner Seeland, the area around lake Neuchâtel, lake Biel and lake Murten. The Bernese part of the Seeland in particular has been considered Switzerland's "vegetable garden" since the regulation of the Aare(FDCH, 2021).
 
 ```{r}
 boars <- wildschwein_BE
 head(boars)
 ```
+
 Export as .csv
+
 ```{r}
 # Optional, to take a look at the data with QGIS 
 write.csv(boars, "boars.csv", row.names = FALSE)
 ```
 
-# Step 1: Raster
+**Step 1: Raster**
 
 Telling R that E and N are coordinate columns
+
 ```{r}
 boars$E <- as.integer(boars$E)
 boars$N <- as.integer(boars$N)
 coordinates(boars) <- boars[,c(5, 6)]
 ```
 
-Telling R that our points are in LV95 and check 
+Telling R that our points are in LV95 and check
+
 ```{r}
 proj4string(boars) <- CRS("+init=epsg:2056")
 is.projected(boars)
 ```
+
 Creating a Raster over the extend of our boar location points
+
 ```{r}
 r <- raster(ext=extent(boars))
 
@@ -54,17 +96,20 @@ r <- raster(ext=extent(boars))
 res(r) <- 1000
 r
 ```
-1000m results in 13*10 cells
+
+1000m results in 13\*10 cells
 
 Add raster coordinate info to column
+
 ```{r}
 boars$raster_E <- ((boars$E - r@extent@xmin) %/% ((r@extent@xmax - r@extent@xmin)/ r@ncols)) # (Koordinate - Minimum Extent) // cellsize 
 boars$raster_N <- ((boars$N - r@extent@ymin) %/% ((r@extent@ymax - r@extent@ymin)/ r@nrows))
 ```
 
-# Step 2: Grid
+**Step 2: Grid**
 
 Preparing to add a grid for each raster cell
+
 ```{r}
 # Getting boundries for the loop
 minE <- min(boars@data$raster_E)
@@ -78,6 +123,7 @@ grid_N <- c()
 ```
 
 Loop to create grid coordinates
+
 ```{r}
 for (E_n in minE:maxE)
 {
@@ -100,12 +146,14 @@ for (E_n in minE:maxE)
 ```
 
 Append grid coordinate vectors to the boars spdf
+
 ```{r}
 boars@data$grid_E <- grid_E
 boars@data$grid_N <- grid_N
 ```
 
-# Step 3: Create Chess Strings per Raster Cell & Animal
+**Step 3: Create Chess Strings per Raster Cell & Animal**
+
 ```{r}
 # Append all Information to a new DF containing our "Chess Strings"
 
@@ -120,6 +168,7 @@ colnames(chess_boars) <- name_vector;
 ```
 
 Creating the ChessStrings (This Loop takes a few seconds to run)
+
 ```{r}
 for (E_n in minE:maxE)
 {
@@ -154,8 +203,437 @@ for (E_n in minE:maxE)
 chess_boars <- chess_boars[-c(1),] 
 ```
 
+**Step 4: Calculate Corridors**
+
+```{r}
+PopularRasterGrids <- dplyr::count_(boars@data, vars = c("raster_E","raster_N","grid_E","grid_N"))
+PopularRasterGridsByName <- dplyr::count_(boars@data, vars = c("TierName","raster_E","raster_N","grid_E","grid_N"))
+
+```
+
+**Step 5: Calculate Similar Trajectories**
+
+```{r}
+Amos <- filter(chess_boars, TierName == "Amos")
+Amos <- unite(Amos, Coordinate, c(raster_E, raster_N))
+Amos <- reshape(Amos,idvar = "TierName", timevar = "Coordinate", direction = "wide")
+colnames(Amos) <- gsub("ChessString.","",colnames(Amos))
+```
+
+```{r}
+Caroline <- filter(chess_boars, TierName == "Caroline")
+Caroline <- unite(Caroline, Coordinate, c(raster_E, raster_N))
+Caroline <- reshape(Caroline,idvar = "TierName", timevar = "Coordinate", direction = "wide")
+colnames(Caroline) <- gsub("ChessString.","",colnames(Caroline))
+```
+
+```{r}
+Claude <- filter(chess_boars, TierName == "Claude")
+Claude <- unite(Claude, Coordinate, c(raster_E, raster_N))
+Claude <- reshape(Claude,idvar = "TierName", timevar = "Coordinate", direction = "wide")
+colnames(Claude) <- gsub("ChessString.","",colnames(Claude))
+```
+
+```{r}
+Donar <- filter(chess_boars, TierName == "Donar")
+Donar <- unite(Donar, Coordinate, c(raster_E, raster_N))
+Donar <- reshape(Donar,idvar = "TierName", timevar = "Coordinate", direction = "wide")
+colnames(Donar) <- gsub("ChessString.","",colnames(Donar))
+```
+
+```{r}
+Evelin <- filter(chess_boars, TierName == "Evelin")
+Evelin <- unite(Evelin, Coordinate, c(raster_E, raster_N))
+Evelin <- reshape(Evelin,idvar = "TierName", timevar = "Coordinate", direction = "wide")
+colnames(Evelin) <- gsub("ChessString.","",colnames(Evelin))
+```
+
+```{r}
+Franz <- filter(chess_boars, TierName == "Franz")
+Franz <- unite(Franz, Coordinate, c(raster_E, raster_N))
+Franz <- reshape(Franz,idvar = "TierName", timevar = "Coordinate", direction = "wide")
+colnames(Franz) <- gsub("ChessString.","",colnames(Franz))
+```
+
+```{r}
+Frida <- filter(chess_boars, TierName == "Frida")
+Frida <- unite(Frida, Coordinate, c(raster_E, raster_N))
+Frida <- reshape(Frida,idvar = "TierName", timevar = "Coordinate", direction = "wide")
+colnames(Frida) <- gsub("ChessString.","",colnames(Frida))
+```
+
+```{r}
+Fritz <- filter(chess_boars, TierName == "Fritz")
+Fritz <- unite(Fritz, Coordinate, c(raster_E, raster_N))
+Fritz <- reshape(Fritz,idvar = "TierName", timevar = "Coordinate", direction = "wide")
+colnames(Fritz) <- gsub("ChessString.","",colnames(Fritz))
+```
+
+```{r}
+Gaby <- filter(chess_boars, TierName == "Gaby")
+Gaby <- unite(Gaby, Coordinate, c(raster_E, raster_N))
+Gaby <- reshape(Gaby,idvar = "TierName", timevar = "Coordinate", direction = "wide")
+colnames(Gaby) <- gsub("ChessString.","",colnames(Gaby))
+```
+
+```{r}
+Isabelle <- filter(chess_boars, TierName == "Isabelle")
+Isabelle <- unite(Isabelle, Coordinate, c(raster_E, raster_N))
+Isabelle <- reshape(Isabelle,idvar = "TierName", timevar = "Coordinate", direction = "wide")
+colnames(Isabelle) <- gsub("ChessString.","",colnames(Isabelle))
+```
+
+```{r}
+Joanna <- filter(chess_boars, TierName == "Joanna")
+Joanna <- unite(Joanna, Coordinate, c(raster_E, raster_N))
+Joanna <- reshape(Joanna,idvar = "TierName", timevar = "Coordinate", direction = "wide")
+colnames(Joanna) <- gsub("ChessString.","",colnames(Joanna))
+```
+
+```{r}
+Miriam <- filter(chess_boars, TierName == "Miriam")
+Miriam <- unite(Miriam, Coordinate, c(raster_E, raster_N))
+Miriam <- reshape(Miriam,idvar = "TierName", timevar = "Coordinate", direction = "wide")
+colnames(Miriam) <- gsub("ChessString.","",colnames(Miriam))
+```
+
+```{r}
+Nicole <- filter(chess_boars, TierName == "Nicole")
+Nicole <- unite(Nicole, Coordinate, c(raster_E, raster_N))
+Nicole <- reshape(Nicole,idvar = "TierName", timevar = "Coordinate", direction = "wide")
+colnames(Nicole) <- gsub("ChessString.","",colnames(Nicole))
+```
+
+```{r}
+Olga <- filter(chess_boars, TierName == "Olga")
+Olga <- unite(Olga, Coordinate, c(raster_E, raster_N))
+Olga <- reshape(Olga,idvar = "TierName", timevar = "Coordinate", direction = "wide")
+colnames(Olga) <- gsub("ChessString.","",colnames(Olga))
+```
+
+```{r}
+Rosa <- filter(chess_boars, TierName == "Rosa")
+Rosa <- unite(Rosa, Coordinate, c(raster_E, raster_N))
+Rosa <- reshape(Rosa,idvar = "TierName", timevar = "Coordinate", direction = "wide")
+colnames(Rosa) <- gsub("ChessString.","",colnames(Rosa))
+```
+
+```{r}
+Ruth <- filter(chess_boars, TierName == "Ruth")
+Ruth <- unite(Ruth, Coordinate, c(raster_E, raster_N))
+Ruth <- reshape(Ruth,idvar = "TierName", timevar = "Coordinate", direction = "wide")
+colnames(Ruth) <- gsub("ChessString.","",colnames(Ruth))
+```
+
+```{r}
+Sabine <- filter(chess_boars, TierName == "Sabine")
+Sabine <- unite(Sabine, Coordinate, c(raster_E, raster_N))
+Sabine <- reshape(Sabine,idvar = "TierName", timevar = "Coordinate", direction = "wide")
+colnames(Sabine) <- gsub("ChessString.","",colnames(Sabine))
+```
+
+```{r}
+Ueli <- filter(chess_boars, TierName == "Ueli")
+Ueli <- unite(Ueli, Coordinate, c(raster_E, raster_N))
+Ueli <- reshape(Ueli,idvar = "TierName", timevar = "Coordinate", direction = "wide")
+colnames(Ueli) <- gsub("ChessString.","",colnames(Ueli))
+```
+
+```{r}
+Venus <- filter(chess_boars, TierName == "Venus")
+Venus <- unite(Venus, Coordinate, c(raster_E, raster_N))
+Venus <- reshape(Venus,idvar = "TierName", timevar = "Coordinate", direction = "wide")
+colnames(Venus) <- gsub("ChessString.","",colnames(Venus))
+```
+
+```{r}
+wildboarlist <- list(Amos, Caroline, Claude, Donar, Evelin, Franz, Frida, Fritz, Gaby, Isabelle, Joanna, Miriam, Nicole, Olga, Rosa, Ruth, Sabine, Ueli, Venus)
+wildboarCombinations <- combn(unique(wildboarlist),2)
+WBC_chess <- dplyr::bind_rows(wildboarCombinations[1:2,])
+WBC_chess[is.na(WBC_chess)] <- ""
+```
+
+```{r}
+wildboarText <- list("Amos", "Caroline", "Claude", "Donar", "Evelin", "Franz", "Frida", "Fritz", "Gaby", "Isabelle", "Joanna", "Miriam", "Nicole", "Olga", "Rosa", "Ruth", "Sabine", "Ueli", "Venus")
+wildboarCombi <- combn(unique(wildboarText),2)
+wildboarCombi <- paste(wildboarCombi[1,], wildboarCombi[2,], sep="-")
+wildboarCombi <- as.data.frame(wildboarCombi)
+colname <- c(colnames(WBC_chess))
+wildboarCombi[ , colname] <- 0
+wildboarCombi$TierName <- NULL
+
+EditDistance <- wildboarCombi
+
+```
+
+```{r}
+
+for (i in 2:(ncol(WBC_chess)-1)) {
+    
+  for (j in seq(from = 1, to = 341, by = 2)) {
+    for (k in 1:170) {
+      EditDistance[k,i] <- adist(WBC_chess[j,i], WBC_chess[j+1,i])
+      
+    }
+  }
+}
 
 
+```
+
+```{r}
+for (k in 3:3) {
+  for (i in 2:(ncol(WBC_chess))) {
+    for (j in seq(from = 5, to = 5, by = 1)) {
+      EditDistance[k,i] <- adist(WBC_chess[j,i], WBC_chess[j+1,i])
+    }
+  }
+}
+```
+
+```{r}
+for (i in 2:(ncol(WBC_chess)-1)) {
+    
+  for (j in seq(from = 1, to = 3, by = 2)) {
+    zspVector <- c(adist(WBC_chess[j,i], WBC_chess[j+1,i]))
+    print(zspVector)
+  }
+}
+```
+
+```{r}
+rowSums(EditDistance[1,2:65])
+rowSums(EditDistance[2,2:65])
+rowSums(EditDistance[3,2:65])
+```
+
+```{r}
+storage1 <- numeric(52)
+
+for (i in 2:(ncol(AmosCaroline)-1)) {
+    
+  for (j in 1:1) {
+    #print(paste(i,j," and ",i,j+1))
+    storage1[i-1] <-adist(AmosCaroline[j,i], AmosCaroline[j+1,i])
+    
+  }
+}
+
+print(sum(storage1))
+print(storage)
+
+```
+
+```{r}
+AmosClaude <- dplyr::bind_rows(Amos,Claude)
+AmosClaude[is.na(AmosClaude)] <- ""
+
+storage2 <- numeric(41)
+
+for (i in 2:(ncol(AmosClaude)-1)) {
+    
+  for (j in 1:1) {
+    #print(paste(i,j," and ",i,j+1))
+    storage2[i-1] <-adist(AmosClaude[j,i], AmosClaude[j+1,i])
+    
+  }
+}
+
+print(sum(storage2))
+print(storage2)
 
 
+```
 
+```{r}
+AmosDonar <- dplyr::bind_rows(Amos,Donar)
+AmosDonar[is.na(AmosDonar)] <- ""
+
+storage3 <- numeric(45)
+
+for (i in 2:(ncol(AmosDonar)-1)) {
+    
+  for (j in 1:1) {
+    #print(paste(i,j," and ",i,j+1))
+    storage3[i-1] <-adist(AmosDonar[j,i], AmosDonar[j+1,i])
+    
+  }
+}
+
+print(sum(storage3))
+print(storage3)
+```
+
+```{r}
+AmosEvelin <- dplyr::bind_rows(Amos,Evelin)
+AmosEvelin[is.na(AmosEvelin)] <- ""
+
+storage4 <- numeric(41)
+
+for (i in 2:(ncol(AmosEvelin)-1)) {
+    
+  for (j in 1:1) {
+    #print(paste(i,j," and ",i,j+1))
+    storage4[i-1] <-adist(AmosEvelin[j,i], AmosEvelin[j+1,i])
+    
+  }
+}
+
+print(sum(storage4))
+print(storage4)
+```
+
+```{r}
+AmosUeli <- dplyr::bind_rows(Amos,Ueli)
+AmosUeli[is.na(AmosUeli)] <- ""
+
+storage5 <- numeric(59)
+
+for (i in 2:(ncol(AmosUeli)-1)) {
+    
+  for (j in 1:1) {
+    #print(paste(i,j," and ",i,j+1))
+    storage5[i-1] <-adist(AmosUeli[j,i], AmosUeli[j+1,i])
+    
+  }
+}
+
+print(sum(storage5))
+print(storage5)
+```
+
+```{r}
+AmosSabine <- dplyr::bind_rows(Amos,Sabine)
+AmosSabine[is.na(AmosSabine)] <- ""
+
+storage6 <- numeric(59)
+
+for (i in 2:(ncol(AmosSabine)-1)) {
+    
+  for (j in 1:1) {
+    #print(paste(i,j," and ",i,j+1))
+    storage6[i-1] <-adist(AmosSabine[j,i], AmosSabine[j+1,i])
+    
+  }
+}
+
+print(sum(storage6))
+print(storage6)
+```
+
+### 4. Results
+
+Table 1
+
+Table 2
+
+### 5. Visualisation
+
+```{r}
+UeliTraj <- ggplot(subset(boars, TierName %in% c("Ueli"))) +
+geom_point(aes(E,N, colour = "1 minute"), alpha = 0.2) +
+geom_path(aes(E,N, colour = "1 minute"), alpha = 0.2) +
+labs(color="Trajectory", title = "Comparing original- with 3 minutes-resampled data")  +
+theme(legend.position = "none",
+      panel.grid = element_blank(),
+      axis.title = element_blank(),
+      axis.text = element_blank(),
+      axis.ticks = element_blank(),
+      panel.background = element_blank())
+
+```
+
+```{r}
+checkboxGroupInput(
+  inputId = "CheckGroupExample",
+  label = "Wildboars",
+  choices=list("Ueli", "Sabine")
+  
+)
+```
+
+```{r}
+minZoom = 0
+maxZoom = 13
+resolutions <- 0.42*(2^(maxZoom:minZoom))
+
+proj4def_espg2056 <- "+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs"
+crs_espg2056 <- leafletCRS(crsClass = "L.Proj.CRS", code = "EPSG:2056", proj4def = proj4def_espg2056, resolutions = resolutions, origin = c(0,0))
+
+```
+
+```{r}
+leaflet(options = leafletOptions(worldCopyJump = F, crs = epsg2056, data = Ueli)) %>% 
+  addProviderTiles(providers$CartoDB.Positron, options = providerTileOptions(opacity = 0.6)) %>%
+  addPolylines(lat = ~N, lng = ~E, color = "red")
+```
+
+```{r}
+leaflet(options = leafletOptions(worldCopyJump = F, crs = crs_espg2056))%>%
+  addProviderTiles(providers$CartoDB.Positron, options = providerTileOptions(opacity = 0.6)) %>%
+  addMarkers(2570390,1204820)
+```
+
+```{r}
+epsg3006 <- leafletCRS(crsClass = "L.Proj.CRS", code = "EPSG:3006",
+  proj4def = "+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs",
+  resolutions = 2^(13:-1), # 8192 down to 0.5
+  origin = c(0, 0)
+)
+
+tile_url <- "http://api.geosition.com/tile/osm-bright-3006/{z}/{x}/{y}.png"
+tile_attrib <- "Map data &copy; <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap contributors</a>, Imagery &copy; 2013 <a href='http://www.kartena.se/'>Kartena</a>"
+
+leaflet(options = leafletOptions(worldCopyJump = F, crs = epsg3006)) %>%
+  setView(11.965053, 57.70451, 13) %>%
+  addTiles(urlTemplate = tile_url,
+    attribution = tile_attrib,
+    options = tileOptions(minZoom = 0, maxZoom = 14, continuousWorld = T)) %>%
+  addMarkers(11.965053, 57.70451)
+```
+
+```{r}
+m <- leaflet() %>%
+  addTiles() %>%  # Add default OpenStreetMap map tiles
+  addMarkers(lng=174.768, lat=-36.852, popup="The birthplace of R") %>%
+  addGraticule()
+m  # Print the map
+```
+
+```{r}
+boarsTraj <- wildschwein_BE
+head(boarsTraj)
+```
+
+```{r}
+AmosTraj <- filter(boarsTraj, TierName == "Amos")
+```
+
+```{r}
+AmosTraj$E <- as.integer(AmosTraj$E)
+AmosTraj$N <- as.integer(AmosTraj$N)
+coordinates(AmosTraj) <- AmosTraj[,c(5, 6)]
+```
+
+Telling R that our points are in LV95 and check
+
+```{r}
+proj4string(AmosTraj) <- CRS("+init=epsg:4326")
+is.projected(AmosTraj)
+```
+
+### 6. Discussion
+
+### 7. References
+
+Amt für Wald und Natur 2021: <https://www.fr.ch/de/energie-landwirtschaft-und-umwelt/landwirtschaft-und-nutztiere/wildschaeden-in-der-landwirtschaft>
+
+Bundesamt für Statistik 2020: <https://www.bfs.admin.ch/bfs/de/home/statistiken/land-forstwirtschaft/jagd-fischerei-fischzucht/jagd.html>
+
+FDCH 2021: <https://www.schweizer-regionen.ch/ortschaften/Region_BielerSeeland>
+
+Keuling et al. 2016: <https://www.sciencedirect.com/science/article/pii/S0048969716303709?via%3Dihub>
+
+WildLife Solutions 2021: <https://wls.ch/sanglier/?lang=de>
+
+ZHAW 2019: <https://www.youtube.com/watch?v=WYXnCQMfPiI&ab_channel=ZHAWZ%C3%BCrcherHochschulef%C3%BCrAngewandteWissenschaften>
