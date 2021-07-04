@@ -388,10 +388,10 @@ for (i in 2:(ncol(WBC_chess)-1)) {
 
 ```
 
-```{r} 
+```{r}
 # Diese
 gc()
-memory.limit(9999999999) # For Windows
+memory.limit(99999999999999999) # For Windows
 
 
 EDist_row <- 1
@@ -413,7 +413,6 @@ gc()
 ```{r}
 paste_row = c(name)
 ```
-
 
 ```{r}
 for (i in 2:(ncol(WBC_chess)-1)) {
@@ -553,100 +552,15 @@ Table 2
 
 ### 5. Visualisation
 
-```{r}
-UeliTraj <- ggplot(subset(boars, TierName %in% c("Ueli"))) +
-geom_point(aes(E,N, colour = "1 minute"), alpha = 0.2) +
-geom_path(aes(E,N, colour = "1 minute"), alpha = 0.2) +
-labs(color="Trajectory", title = "Comparing original- with 3 minutes-resampled data")  +
-theme(legend.position = "none",
-      panel.grid = element_blank(),
-      axis.title = element_blank(),
-      axis.text = element_blank(),
-      axis.ticks = element_blank(),
-      panel.background = element_blank())
+The initial goal was to create a interactive map with RShiny and Leaflet. Check boxes would have enabled the display of one or multiple wild boar trajectories. The grid and the background map would have increased the orientation in space. But Leaflet only accepts EPSG: 4326. But our map depends on EPSG: 2056, as the raster and grid were calculated in meters. A simple visualisation was therefore realised in QGIS. A .csv per wild boar was created in R and the Points to Path tool in QGIS was used to convert the points to lines (trajectories). The raster and grid were created with the mmQGIS plugin.
 
-```
-
-```{r}
-checkboxGroupInput(
-  inputId = "CheckGroupExample",
-  label = "Wildboars",
-  choices=list("Ueli", "Sabine")
-  
-)
-```
-
-```{r}
-minZoom = 0
-maxZoom = 13
-resolutions <- 0.42*(2^(maxZoom:minZoom))
-
-proj4def_espg2056 <- "+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs"
-crs_espg2056 <- leafletCRS(crsClass = "L.Proj.CRS", code = "EPSG:2056", proj4def = proj4def_espg2056, resolutions = resolutions, origin = c(0,0))
-
-```
-
-```{r}
-leaflet(options = leafletOptions(worldCopyJump = F, crs = epsg2056, data = Ueli)) %>% 
-  addProviderTiles(providers$CartoDB.Positron, options = providerTileOptions(opacity = 0.6)) %>%
-  addPolylines(lat = ~N, lng = ~E, color = "red")
-```
-
-```{r}
-leaflet(options = leafletOptions(worldCopyJump = F, crs = crs_espg2056))%>%
-  addProviderTiles(providers$CartoDB.Positron, options = providerTileOptions(opacity = 0.6)) %>%
-  addMarkers(2570390,1204820)
-```
-
-```{r}
-epsg3006 <- leafletCRS(crsClass = "L.Proj.CRS", code = "EPSG:3006",
-  proj4def = "+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs",
-  resolutions = 2^(13:-1), # 8192 down to 0.5
-  origin = c(0, 0)
-)
-
-tile_url <- "http://api.geosition.com/tile/osm-bright-3006/{z}/{x}/{y}.png"
-tile_attrib <- "Map data &copy; <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap contributors</a>, Imagery &copy; 2013 <a href='http://www.kartena.se/'>Kartena</a>"
-
-leaflet(options = leafletOptions(worldCopyJump = F, crs = epsg3006)) %>%
-  setView(11.965053, 57.70451, 13) %>%
-  addTiles(urlTemplate = tile_url,
-    attribution = tile_attrib,
-    options = tileOptions(minZoom = 0, maxZoom = 14, continuousWorld = T)) %>%
-  addMarkers(11.965053, 57.70451)
-```
-
-```{r}
-m <- leaflet() %>%
-  addTiles() %>%  # Add default OpenStreetMap map tiles
-  addMarkers(lng=174.768, lat=-36.852, popup="The birthplace of R") %>%
-  addGraticule()
-m  # Print the map
-```
-
-```{r}
-boarsTraj <- wildschwein_BE
-head(boarsTraj)
-```
-
-```{r}
-AmosTraj <- filter(boarsTraj, TierName == "Amos")
-```
-
-```{r}
-AmosTraj$E <- as.integer(AmosTraj$E)
-AmosTraj$N <- as.integer(AmosTraj$N)
-coordinates(AmosTraj) <- AmosTraj[,c(5, 6)]
-```
-
-Telling R that our points are in LV95 and check
-
-```{r}
-proj4string(AmosTraj) <- CRS("+init=epsg:4326")
-is.projected(AmosTraj)
-```
+The QGIS project can be accessed as a geopackage from our repository.
 
 ### 6. Discussion
+
+**General description of wild boar trajectories**
+
+Most of the wild boars seem to use the Seewald next to lake Neuchâtel as a homebase. This makes sense, because the typical habitat of wild boars is the forest. The movement of Sabine, Olga, Nicole, Joana, Isabelle, Gaby, Fritz and Eveline is mostly restricted to the Seewald. Those are quite a few animals for such a small forest, as the area is only around 2.5 km\^2.
 
 ### 7. References
 
