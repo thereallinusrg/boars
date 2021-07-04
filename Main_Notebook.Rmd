@@ -357,79 +357,19 @@ WBC_chess <- dplyr::bind_rows(wildboarCombinations[1:2,])
 WBC_chess[is.na(WBC_chess)] <- ""
 ```
 
-Export for Loop in Python
-
+Export data to run Loop to calculate EditDistance in IPython
+(see separate file wbc_loop.ipynb)
+--> we did this, since we were not able to vectorize the functionality of the loop and python (pandas) performs better handling such large loops then R
 ```{r}
 write.csv(WBC_chess, "wbc.csv", row.names = FALSE)
 ```
 
-############################################ 
-
+Import data again.
 ```{r}
-wildboarText <- list("Amos", "Caroline", "Claude", "Donar", "Evelin", "Franz", "Frida", "Fritz", "Gaby", "Isabelle", "Joanna", "Miriam", "Nicole", "Olga", "Rosa", "Ruth", "Sabine", "Ueli", "Venus")
-wildboarCombi <- combn(unique(wildboarText),2)
-wildboarCombi <- paste(wildboarCombi[1,], wildboarCombi[2,], sep="-")
-wildboarCombi <- as.data.frame(wildboarCombi)
-colname <- c(colnames(WBC_chess))
-wildboarCombi[ , colname] <- 0
-wildboarCombi$TierName <- NULL
-
-EditDistance <- wildboarCombi
-
+EditDistance <- read.csv("edc.csv", header=TRUE, stringsAsFactors=FALSE)
 ```
 
-```{r}
-wildboarCombi <- combn(unique(wildboarText),2)
-wildboarCombi <- paste(wildboarCombi[1,], wildboarCombi[2,], sep="-")
-```
-
-```{r}
-
-for (i in 2:(ncol(WBC_chess)-1)) {
-    
-  for (j in seq(from = 1, to = 341, by = 2)) {
-    for (k in 1:170) {
-      EditDistance[k,i] <- adist(WBC_chess[j,i], WBC_chess[j+1,i])
-      
-    }
-  }
-}
-
-
-```
-
-```{r}
-# Diese
-gc()
-memory.limit(99999999999999999) # For Windows
-
-
-EDist_row <- 1
-  for (WBC_row in seq(from = 1, to = 171, by = 2)) {
-    name <- paste(WBC_chess[WBC_row,1], WBC_chess[WBC_row+1,1], sep="-")
-    paste_row = c(name)
-    for (WBC_col in 2:(ncol(WBC_chess))) {
-      edist_value <- adist(WBC_chess[WBC_row, WBC_col], WBC_chess[WBC_row+1, WBC_col])
-      paste_row <- append(paste_row, edist_value) 
-    }
-  EditDistance[EDist_row,] <- paste_row
-  EDist_row <- EDist_row + 1
-  }
-
-gc()
-
-```
-
-```{r}
-for (i in 2:(ncol(WBC_chess)-1)) {
-    
-  for (j in seq(from = 1, to = 3, by = 2)) {
-    zspVector <- c(adist(WBC_chess[j,i], WBC_chess[j+1,i]))
-    print(zspVector)
-  }
-}
-```
-
+Add EditDistance row sum column.
 ```{r}
 rowSums(EditDistance[1,2:65])
 rowSums(EditDistance[2,2:65])
