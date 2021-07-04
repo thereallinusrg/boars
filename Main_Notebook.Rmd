@@ -355,6 +355,13 @@ WBC_chess <- dplyr::bind_rows(wildboarCombinations[1:2,])
 WBC_chess[is.na(WBC_chess)] <- ""
 ```
 
+Export for Loop inm Python
+```{r}
+write.csv(WBC_chess, "wbc.csv", row.names = FALSE)
+```
+
+############################################
+
 ```{r}
 wildboarText <- list("Amos", "Caroline", "Claude", "Donar", "Evelin", "Franz", "Frida", "Fritz", "Gaby", "Isabelle", "Joanna", "Miriam", "Nicole", "Olga", "Rosa", "Ruth", "Sabine", "Ueli", "Venus")
 wildboarCombi <- combn(unique(wildboarText),2)
@@ -411,10 +418,6 @@ gc()
 ```
 
 ```{r}
-paste_row = c(name)
-```
-
-```{r}
 for (i in 2:(ncol(WBC_chess)-1)) {
     
   for (j in seq(from = 1, to = 3, by = 2)) {
@@ -428,120 +431,6 @@ for (i in 2:(ncol(WBC_chess)-1)) {
 rowSums(EditDistance[1,2:65])
 rowSums(EditDistance[2,2:65])
 rowSums(EditDistance[3,2:65])
-```
-
-```{r}
-storage1 <- numeric(52)
-
-for (i in 2:(ncol(AmosCaroline)-1)) {
-    
-  for (j in 1:1) {
-    #print(paste(i,j," and ",i,j+1))
-    storage1[i-1] <-adist(AmosCaroline[j,i], AmosCaroline[j+1,i])
-    
-  }
-}
-
-print(sum(storage1))
-print(storage)
-
-```
-
-```{r}
-AmosClaude <- dplyr::bind_rows(Amos,Claude)
-AmosClaude[is.na(AmosClaude)] <- ""
-
-storage2 <- numeric(41)
-
-for (i in 2:(ncol(AmosClaude)-1)) {
-    
-  for (j in 1:1) {
-    #print(paste(i,j," and ",i,j+1))
-    storage2[i-1] <-adist(AmosClaude[j,i], AmosClaude[j+1,i])
-    
-  }
-}
-
-print(sum(storage2))
-print(storage2)
-
-
-```
-
-```{r}
-AmosDonar <- dplyr::bind_rows(Amos,Donar)
-AmosDonar[is.na(AmosDonar)] <- ""
-
-storage3 <- numeric(45)
-
-for (i in 2:(ncol(AmosDonar)-1)) {
-    
-  for (j in 1:1) {
-    #print(paste(i,j," and ",i,j+1))
-    storage3[i-1] <-adist(AmosDonar[j,i], AmosDonar[j+1,i])
-    
-  }
-}
-
-print(sum(storage3))
-print(storage3)
-```
-
-```{r}
-AmosEvelin <- dplyr::bind_rows(Amos,Evelin)
-AmosEvelin[is.na(AmosEvelin)] <- ""
-
-storage4 <- numeric(41)
-
-for (i in 2:(ncol(AmosEvelin)-1)) {
-    
-  for (j in 1:1) {
-    #print(paste(i,j," and ",i,j+1))
-    storage4[i-1] <-adist(AmosEvelin[j,i], AmosEvelin[j+1,i])
-    
-  }
-}
-
-print(sum(storage4))
-print(storage4)
-```
-
-```{r}
-AmosUeli <- dplyr::bind_rows(Amos,Ueli)
-AmosUeli[is.na(AmosUeli)] <- ""
-
-storage5 <- numeric(59)
-
-for (i in 2:(ncol(AmosUeli)-1)) {
-    
-  for (j in 1:1) {
-    #print(paste(i,j," and ",i,j+1))
-    storage5[i-1] <-adist(AmosUeli[j,i], AmosUeli[j+1,i])
-    
-  }
-}
-
-print(sum(storage5))
-print(storage5)
-```
-
-```{r}
-AmosSabine <- dplyr::bind_rows(Amos,Sabine)
-AmosSabine[is.na(AmosSabine)] <- ""
-
-storage6 <- numeric(59)
-
-for (i in 2:(ncol(AmosSabine)-1)) {
-    
-  for (j in 1:1) {
-    #print(paste(i,j," and ",i,j+1))
-    storage6[i-1] <-adist(AmosSabine[j,i], AmosSabine[j+1,i])
-    
-  }
-}
-
-print(sum(storage6))
-print(storage6)
 ```
 
 ### 4. Results
