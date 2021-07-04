@@ -383,14 +383,17 @@ for (i in 2:(ncol(WBC_chess)-1)) {
 
 ```
 
-```{r}
-for (k in 3:3) {
-  for (i in 2:(ncol(WBC_chess))) {
-    for (j in seq(from = 5, to = 5, by = 1)) {
-      EditDistance[k,i] <- adist(WBC_chess[j,i], WBC_chess[j+1,i])
+```{r} 
+# Diese
+
+EDist_row <- 1
+  for (WBC_row in seq(from = 1, to = 171, by = 2)) {
+    for (WBC_col in 2:(ncol(WBC_chess))) {
+      EditDistance[EDist_row, WBC_col] <- adist(WBC_chess[WBC_row,WBC_col], WBC_chess[WBC_row+1,WBC_col])
     }
+  EDist_row <- EDist_row + 1
   }
-}
+
 ```
 
 ```{r}
