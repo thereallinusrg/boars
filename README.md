@@ -27,13 +27,6 @@ R1: How can trajectories be modeled to find similarity in movement?
 
 R2: How can common corridors used by several animals be detected?
 
-## Results / products
-
-<!-- Which results/products do you expect, anticipate? -->
-
-## Data
-
-<!-- What data will you use? Will you require additional context data? Where do you get this data from? Do you already have all the data? -->
 
 ## Analytical concepts
 
