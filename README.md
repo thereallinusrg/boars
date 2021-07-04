@@ -46,7 +46,7 @@ R2: How can common corridors used by several animals be detected?
 - Use EDR on all Chess Strings in a cell
 
 - Find Corridors
-  - Check for same Chess Strings
+  - Find highly frequented grid cells
 
 - Find similarly moving Boars
   - Check for Animals with low EDRs
