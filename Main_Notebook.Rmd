@@ -58,6 +58,8 @@ library(stringdist)
 
 The dataset contains spatio-temporal information about 19 different wild boars. The sex can be derived form the animal names. No age information is provided. The observed time periods are of different lengths for the respective animals. Earliest records are from 28.05.2014 and latest records are from 18.10.2016. A location update is provided roughly every 15 min. The tracked animals mostly moved around in the Berner Seeland, the area around lake Neuchâtel, lake Biel and lake Murten. The Bernese part of the Seeland in particular has been considered Switzerland's "vegetable garden" since the regulation of the Aare(FDCH, 2021).
 
+Schritte evtl. bisschen genauer beschreiben!
+
 ```{r}
 boars <- wildschwein_BE
 head(boars)
