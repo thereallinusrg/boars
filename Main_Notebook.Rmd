@@ -17,15 +17,15 @@ Researchers at ZHAW developed an acoustic measure to keep wild boars away from a
 
 To answer both research questions a raster and grid combination (Fig. 1) will be used to reduce the spatial accuracy and to increase the performance of the calculations. The black boxes in Fig. 1 represent the raster with a 1000 m resolution. The purpose of the raster is to split the trajectories of wild boars into fragments. The red boxes represent the grid with a 50 m resolution. The purpose of the grid is to reduce the spatial resolution of the GPS data. Movement within a grid cell cannot be distinguished anymore. GPS coordinates are replaced by grid cell names (A1, A2 etc.). The colorful lines in Fig. 1 represent the movement of unique wild boars.
 
-![](C:/Users/eric9/AppData/Local/RStudio/tmp/paste-246AD26B.png)
+![](Fig.1.JPG)
 
 Fig. 1 Raster/Grid layout used for spatial analysis in this project
 
-To answer RQ1 we will use the Edit Distance method to compare the similarity of two trajectories. The adist() tool in R calculates the number of edits needed to make two trajectories identical. The trajectories with the least amount of edits needed, are most similar to each other. Fig. 2 visualizes the process behind adist().
+To answer RQ1 we will use the Edit Distance method to compare the similarity of two trajectories. The ed.distance() tool in R calculates the number of edits needed to make two trajectories identical. The trajectories with the least amount of edits needed, are most similar to each other. Fig. 2 visualizes the process behind ed.distance().
 
-![](C:/Users/eric9/AppData/Local/RStudio/tmp/paste-7B66675D.png)
+![](Fig.2.JPG)
 
-Fig. 2 Visualisation of adist()
+Fig. 2 Visualisation of ed.distance()
 
 To answer RQ2 sequences of most frequently visited grid cells are calculated. The word corridor should not be confused with structures that allow animals to cross anthropogenic barriers. The temporal component of different trajectories is not taken into account. Only the total frequency of grid cells over the whole time period is decisive.
 
@@ -54,8 +54,6 @@ library(stringdist)
 **Step 0: Data**
 
 The dataset contains spatio-temporal information about 19 different wild boars. The sex can be derived form the animal names. No age information is provided. The observed time periods are of different lengths for the respective animals. Earliest records are from 28.05.2014 and latest records are from 18.10.2016. A location update is provided roughly every 15 min. The tracked animals mostly moved around in the Berner Seeland, the area around lake Neuchâtel, lake Biel and lake Murten. The Bernese part of the Seeland in particular has been considered Switzerland's "vegetable garden" since the regulation of the Aare(FDCH, 2021).
-
-Schritte evtl. bisschen genauer beschreiben!
 
 ```{r}
 boars <- wildschwein_BE
@@ -369,7 +367,8 @@ EditDistance <- read.csv("edc.csv", header=TRUE, stringsAsFactors=FALSE)
 Add EditDistance row sum column.
 
 ```{r}
-EditDistance$row_sum = rowSums(df1[,c(-1)])
+EditDistance$row_sum = rowSums(EditDistance[,c(-1)])
+EditDistance <- EditDistance[,c(66, 1:65)]
 ```
 
 ### 3. Results
@@ -381,6 +380,10 @@ View(PopularRasterGrids)
 ```
 
 Tab. 2 Similarity of wild boar movement
+
+```{r}
+View(EditDistance)
+```
 
 ### 4. Visualisation
 
@@ -394,13 +397,13 @@ The QGIS project can be accessed as a geopackage from our repository.
 
 Most of the wild boars seem to use the Seewald next to lake Neuchâtel as a homebase. This makes sense, because the typical habitat of wild boars is the forest. The movement of Sabine, Olga, Nicole, Joana, Isabelle, Gaby, Fritz and Eveline is mostly restricted to the Seewald. Those are quite a few animals for such a small forest, as the area is only around 2.5 km\^2. Wild boars usually live in herds and the family groups are led by a female animal. Male boars usually live as solitary animals and only visit the herds during the mating season (Bayerisches Staatsministerium für Ernährung, Landwirtschaft und Forsten, n.d.). Most of the animals in the Seewald are females. The reeds by the lake offer a good retreat, as they are often nature reserves (BauernZeitung, 2019). The biggest advantage of this forest are probably the surrounding agricultural areas. Wild boars cause a lot of damage, as the fields provide an easy source of food ( rc, 2018; Bieler Tagblatt, 2020). Amos, Caroline, Donar, Franz, Rosa and Ueli did spend more time on agricultural fields than other animals. The trajectory of Franz in Fig. 3 shows his movement on agricultural land. The area next to Witzwil was extensively visited by Franz. Fig. 3 also shows how the railway track acts as boarder. Franz and Ueli mainly move around in the open agricutural areas. Frida, Amos and Miriam have a homebase in the Seewald and Reservat Fanel.
 
-![](C:/Users/eric9/AppData/Local/RStudio/tmp/paste-F2A1DBE3.png){width="669"}
+![](Fig.3.JPG)
 
 Fig. 3 Trajectory of Franz
 
 **Similarly moving wild boars**
 
-We will update this section until tomorrow.
+Tab. 2 contains the edit distances for each wild boar combination. Fritz and Isabelle needed the least amount of edits to be identical, followed by Claude-Fritz and Fritz-Gaby. If we visualise the trajectory of Fritz and Isabelle, we can see that both wild boars move more or less around the same area. Fritz moves also very similar to Claude and Gaby. All three wild boars generally move only within the Seewald. Based on the literature (Bayerisches Staatsministerium für Ernährung, Landwirtschaft und Forsten, n.d.) one would expect that female wild boar trajectories are more similar to each other than male and female trajectories, because male wild boars tend to live as solitary animals. Fritz's movement data was captured from December till February, which roughly corresponds to the mating season of wild boars (Eistrat, 2008). The similar trajectories between males and females are therefore believable. But Claude's movement data is from spring, which does not correspond to the mating season of wild boars. Maybe Fritz and Claude could also be young male wild boars, which tend to move around with their mother and family. Amos and Caroline have the least similar trajectories, as their edit distance number is the highest. Wild boars with small overlapping movement areas tend to have the least similar trajectories.
 
 **Frequently visited corridors**
 
@@ -426,9 +429,11 @@ Bieler Tagblatt (2020): Wildschweine durchpflügen die Felder des Seelands. [\<h
 
 Bundesamt für Statistik (2020): Jagd. [\<https://www.bfs.admin.ch/bfs/de/home/statistiken/land-forstwirtschaft/jagd-fischerei-fischzucht/jagd.html\>](https://www.bfs.admin.ch/bfs/de/home/statistiken/land-forstwirtschaft/jagd-fischerei-fischzucht/jagd.html){.uri} \| Access 04.07.2021
 
+Eistrat, K. (2008): Mating season of wild boars. <https://www.looduskalender.ee/vana/en/node/2144.html> \| Access 04.07.2021
+
 FDCH (2021): Schweiz-Bieler Seeland. [\<https://www.schweizer-regionen.ch/ortschaften/Region_BielerSeeland\>](https://www.schweizer-regionen.ch/ortschaften/Region_BielerSeeland){.uri} \| Access 04.07.2021
 
-Keuling, O., Strauß, E., & Siebert, U. (2016). Regulating wild boar populations is " somebody else's problem " ! - Human dimension in wild boar management. Science of the Total Environment, 554--555, 311--319.
+Keuling, O., Strauß, E., & Siebert, U. (2016): Regulating wild boar populations is " somebody else's problem " ! - Human dimension in wild boar management. Science of the Total Environment, 554--555, 311--319.
 
 WildLife Solutions (2021): Wildschwein (Sus scrofa). [\<https://wls.ch/sanglier/?lang=de\>](https://wls.ch/sanglier/?lang=de){.uri} \| Access 04.07.2021
 
